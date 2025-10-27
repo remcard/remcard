@@ -205,9 +205,12 @@ const Study = () => {
               </div>
               <div
                 className={cn(
-                  "absolute inset-0 flex flex-col items-center justify-center p-8 backface-hidden rotate-y-180",
+                  "absolute inset-0 flex flex-col items-center justify-center p-8 backface-hidden",
                   !isFlipped && "invisible"
                 )}
+                style={{
+                  transform: "rotateY(180deg)",
+                }}
               >
                 <div className="text-sm text-muted-foreground mb-4">DEFINITION</div>
                 <div className="text-2xl text-center">{currentCard.definition}</div>

@@ -15,6 +15,7 @@ interface Flashcard {
   term: string;
   definition: string;
   position: number;
+  image_url?: string;
 }
 
 const SetEditor = () => {
@@ -83,7 +84,7 @@ const SetEditor = () => {
     setFlashcards(flashcards.filter((_, i) => i !== index));
   };
 
-  const updateCard = (index: number, field: "term" | "definition", value: string) => {
+  const updateCard = (index: number, field: "term" | "definition" | "image_url", value: string) => {
     const updated = [...flashcards];
     updated[index][field] = value;
     setFlashcards(updated);
@@ -150,6 +151,7 @@ const SetEditor = () => {
             term: card.term,
             definition: card.definition,
             position: index,
+            image_url: card.image_url || null,
           }))
         );
 
@@ -254,6 +256,21 @@ const SetEditor = () => {
                           placeholder="Enter definition..."
                           rows={3}
                         />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Image URL (optional)</Label>
+                        <Input
+                          value={card.image_url || ""}
+                          onChange={(e) => updateCard(index, "image_url", e.target.value)}
+                          placeholder="https://example.com/image.jpg"
+                        />
+                        {card.image_url && (
+                          <img 
+                            src={card.image_url} 
+                            alt="Preview" 
+                            className="max-w-xs rounded-lg"
+                          />
+                        )}
                       </div>
                     </div>
                     {flashcards.length > 1 && (

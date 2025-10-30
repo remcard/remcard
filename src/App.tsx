@@ -13,6 +13,8 @@ import JoinGame from "./pages/JoinGame";
 import GameLobby from "./pages/GameLobby";
 import GamePlay from "./pages/GamePlay";
 import MatchingGame from "./pages/MatchingGame";
+import LearnMode from "./pages/LearnMode";
+import TestMode from "./pages/TestMode";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/game/lobby/:gameId" element={<GameLobby />} />
           <Route path="/game/play/:gameId" element={<GamePlay />} />
           <Route path="/matching/:id" element={<MatchingGame />} />
+          <Route path="/learn/:id" element={<LearnMode />} />
+          <Route path="/test/:id" element={<TestMode />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

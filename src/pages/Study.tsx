@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, RotateCw, ArrowRight } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, RotateCw, ArrowRight, Play, Pause, Shuffle, Star } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -13,6 +15,8 @@ interface Flashcard {
   id: string;
   term: string;
   definition: string;
+  image_url?: string;
+  is_starred?: boolean;
 }
 
 const Study = () => {
@@ -20,16 +24,37 @@ const Study = () => {
   const navigate = useNavigate();
   const [setTitle, setSetTitle] = useState("");
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [displayedCards, setDisplayedCards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAutoPlay, setIsAutoPlay] = useState(false);
+  const [showTermFirst, setShowTermFirst] = useState(true);
+  const [starredOnly, setStarredOnly] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSetAndCards();
   }, [id]);
 
+  useEffect(() => {
+    if (isAutoPlay && !isFlipped) {
+      const timer = setTimeout(() => {
+        handleNext();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAutoPlay, currentIndex, isFlipped]);
+
+  useEffect(() => {
+    filterCards();
+  }, [flashcards, starredOnly]);
+
   const fetchSetAndCards = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+
       const { data: setData, error: setError } = await supabase
         .from("flashcard_sets")
         .select("title")
@@ -59,7 +84,23 @@ const Study = () => {
         return;
       }
 
-      setFlashcards(cardsData);
+      // Fetch starred status if user is logged in
+      if (user) {
+        const { data: progressData } = await supabase
+          .from("study_progress")
+          .select("flashcard_id, is_starred")
+          .eq("user_id", user.id)
+          .in("flashcard_id", cardsData.map(c => c.id));
+
+        const starredMap = new Map(progressData?.map(p => [p.flashcard_id, p.is_starred]) || []);
+        const cardsWithStars = cardsData.map(card => ({
+          ...card,
+          is_starred: starredMap.get(card.id) || false
+        }));
+        setFlashcards(cardsWithStars);
+      } else {
+        setFlashcards(cardsData);
+      }
     } catch (error: any) {
       toast.error("Failed to load flashcards");
       navigate("/");
@@ -68,12 +109,76 @@ const Study = () => {
     }
   };
 
+  const filterCards = () => {
+    if (starredOnly) {
+      const starred = flashcards.filter(c => c.is_starred);
+      setDisplayedCards(starred.length > 0 ? starred : flashcards);
+    } else {
+      setDisplayedCards(flashcards);
+    }
+    setCurrentIndex(0);
+  };
+
+  const handleShuffle = () => {
+    const shuffled = [...displayedCards].sort(() => Math.random() - 0.5);
+    setDisplayedCards(shuffled);
+    setCurrentIndex(0);
+    setIsFlipped(false);
+    toast.success("Cards shuffled!");
+  };
+
+  const toggleStar = async () => {
+    if (!userId) {
+      toast.error("Please log in to star cards");
+      return;
+    }
+
+    const currentCard = displayedCards[currentIndex];
+    const newStarredState = !currentCard.is_starred;
+
+    try {
+      const { data: existingProgress } = await supabase
+        .from("study_progress")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("flashcard_id", currentCard.id)
+        .maybeSingle();
+
+      if (existingProgress) {
+        await supabase
+          .from("study_progress")
+          .update({ is_starred: newStarredState })
+          .eq("id", existingProgress.id);
+      } else {
+        await supabase
+          .from("study_progress")
+          .insert({
+            user_id: userId,
+            flashcard_id: currentCard.id,
+            is_starred: newStarredState
+          });
+      }
+
+      // Update local state
+      setFlashcards(flashcards.map(c => 
+        c.id === currentCard.id ? { ...c, is_starred: newStarredState } : c
+      ));
+      setDisplayedCards(displayedCards.map(c => 
+        c.id === currentCard.id ? { ...c, is_starred: newStarredState } : c
+      ));
+
+      toast.success(newStarredState ? "Card starred!" : "Star removed");
+    } catch (error) {
+      toast.error("Failed to update star");
+    }
+  };
+
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
 
   const handleNext = () => {
-    if (currentIndex < flashcards.length - 1) {
+    if (currentIndex < displayedCards.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setIsFlipped(false);
     } else {
@@ -95,8 +200,8 @@ const Study = () => {
     );
   }
 
-  const currentCard = flashcards[currentIndex];
-  const progress = ((currentIndex + 1) / flashcards.length) * 100;
+  const currentCard = displayedCards[currentIndex];
+  const progress = ((currentIndex + 1) / displayedCards.length) * 100;
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
@@ -110,16 +215,24 @@ const Study = () => {
                 Exit
               </Button>
             </div>
-            <div className="text-center">
+            <div className="text-center flex-1">
               <h1 className="font-semibold">{setTitle}</h1>
               <p className="text-sm text-muted-foreground">
-                {currentIndex + 1} / {flashcards.length}
+                {currentIndex + 1} / {displayedCards.length}
               </p>
             </div>
-            <Button variant="ghost" onClick={handleRestart}>
-              <RotateCw className="w-4 h-4 mr-2" />
-              Restart
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="icon" onClick={() => setIsAutoPlay(!isAutoPlay)}>
+                {isAutoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleShuffle}>
+                <Shuffle className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" onClick={handleRestart}>
+                <RotateCw className="w-4 h-4 mr-2" />
+                Restart
+              </Button>
+            </div>
           </div>
           <Progress value={progress} className="mt-4 h-2" />
         </div>
@@ -127,6 +240,41 @@ const Study = () => {
 
       <main className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="space-y-6">
+          <div className="flex justify-between items-center p-4 bg-card rounded-lg border">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={showTermFirst}
+                  onCheckedChange={(checked) => {
+                    setShowTermFirst(checked);
+                    setIsFlipped(false);
+                  }}
+                  id="term-first"
+                />
+                <Label htmlFor="term-first" className="cursor-pointer">
+                  Show {showTermFirst ? "Term" : "Definition"} First
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={starredOnly}
+                  onCheckedChange={setStarredOnly}
+                  id="starred-only"
+                />
+                <Label htmlFor="starred-only" className="cursor-pointer">
+                  Starred Only
+                </Label>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleStar}
+              className={cn(currentCard?.is_starred && "text-warning")}
+            >
+              <Star className={cn("w-5 h-5", currentCard?.is_starred && "fill-current")} />
+            </Button>
+          </div>
           <div
             className="perspective-1000 cursor-pointer"
             onClick={handleFlip}
@@ -147,8 +295,19 @@ const Study = () => {
                   isFlipped && "invisible"
                 )}
               >
-                <div className="text-sm text-muted-foreground mb-4">TERM</div>
-                <div className="text-3xl font-bold text-center">{currentCard.term}</div>
+                <div className="text-sm text-muted-foreground mb-4">
+                  {showTermFirst ? "TERM" : "DEFINITION"}
+                </div>
+                {currentCard.image_url && showTermFirst && (
+                  <img 
+                    src={currentCard.image_url} 
+                    alt={currentCard.term}
+                    className="max-w-sm mb-4 rounded-lg"
+                  />
+                )}
+                <div className="text-3xl font-bold text-center">
+                  {showTermFirst ? currentCard.term : currentCard.definition}
+                </div>
                 <div className="mt-8 text-sm text-muted-foreground">
                   Click to flip
                 </div>
@@ -162,8 +321,19 @@ const Study = () => {
                   transform: "rotateY(180deg)",
                 }}
               >
-                <div className="text-sm text-muted-foreground mb-4">DEFINITION</div>
-                <div className="text-2xl text-center">{currentCard.definition}</div>
+                <div className="text-sm text-muted-foreground mb-4">
+                  {showTermFirst ? "DEFINITION" : "TERM"}
+                </div>
+                {currentCard.image_url && !showTermFirst && (
+                  <img 
+                    src={currentCard.image_url} 
+                    alt={currentCard.term}
+                    className="max-w-sm mb-4 rounded-lg"
+                  />
+                )}
+                <div className="text-2xl text-center">
+                  {showTermFirst ? currentCard.definition : currentCard.term}
+                </div>
               </div>
             </Card>
           </div>
@@ -174,7 +344,7 @@ const Study = () => {
               size="lg"
               className="bg-gradient-primary hover:opacity-90 transition-opacity px-8"
             >
-              {currentIndex < flashcards.length - 1 ? (
+              {currentIndex < displayedCards.length - 1 ? (
                 <>
                   Next Card
                   <ArrowRight className="w-5 h-5 ml-2" />

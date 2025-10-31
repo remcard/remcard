@@ -202,6 +202,14 @@ const Study = () => {
   const currentCard = displayedCards[currentIndex];
   const progress = ((currentIndex + 1) / displayedCards.length) * 100;
 
+  if (!currentCard) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">No cards available</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       <header className="border-b border-border bg-card shadow-sm">
@@ -271,9 +279,9 @@ const Study = () => {
               variant="ghost"
               size="icon"
               onClick={toggleStar}
-              className={cn(currentCard?.is_starred && "text-warning")}
+              className={cn(currentCard.is_starred && "text-warning")}
             >
-              <Star className={cn("w-5 h-5", currentCard?.is_starred && "fill-current")} />
+              <Star className={cn("w-5 h-5", currentCard.is_starred && "fill-current")} />
             </Button>
           </div>
           <div

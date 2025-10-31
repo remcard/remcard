@@ -279,9 +279,9 @@ const Study = () => {
               variant="ghost"
               size="icon"
               onClick={toggleStar}
-              className={cn(currentCard.is_starred && "text-warning")}
+              className={cn(currentCard?.is_starred && "text-warning")}
             >
-              <Star className={cn("w-5 h-5", currentCard.is_starred && "fill-current")} />
+              <Star className={cn("w-5 h-5", currentCard?.is_starred && "fill-current")} />
             </Button>
           </div>
           <div
@@ -307,10 +307,10 @@ const Study = () => {
                 <div className="text-sm text-muted-foreground mb-4">
                   {showTermFirst ? "TERM" : "DEFINITION"}
                 </div>
-                {currentCard.image_url && showTermFirst && (
+                {currentCard && currentCard.image_url && showTermFirst && (
                   <img 
                     src={currentCard.image_url} 
-                    alt={currentCard.term}
+                    alt={currentCard?.term || 'Flashcard image'}
                     className="max-w-sm mb-4 rounded-lg"
                   />
                 )}
@@ -333,10 +333,10 @@ const Study = () => {
                 <div className="text-sm text-muted-foreground mb-4">
                   {showTermFirst ? "DEFINITION" : "TERM"}
                 </div>
-                {currentCard.image_url && !showTermFirst && (
+                {currentCard && currentCard.image_url && !showTermFirst && (
                   <img 
                     src={currentCard.image_url} 
-                    alt={currentCard.term}
+                    alt={currentCard?.term || 'Flashcard image'}
                     className="max-w-sm mb-4 rounded-lg"
                   />
                 )}

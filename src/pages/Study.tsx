@@ -97,8 +97,12 @@ const Study = () => {
           is_starred: starredMap.get(card.id) || false
         }));
         setFlashcards(cardsWithStars);
+        setDisplayedCards(cardsWithStars);
+        setCurrentIndex(0);
       } else {
         setFlashcards(cardsData);
+        setDisplayedCards(cardsData);
+        setCurrentIndex(0);
       }
     } catch (error: any) {
       toast.error("Failed to load flashcards");

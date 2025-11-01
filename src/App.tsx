@@ -16,9 +16,6 @@ import Settings from "./pages/Settings";
 import MatchingGame from "./pages/MatchingGame";
 import LearnMode from "./pages/LearnMode";
 import TestMode from "./pages/TestMode";
-import MemoryTracking from "./pages/MemoryTracking";
-import StudyHeatmap from "./pages/StudyHeatmap";
-import Mindmap from "./pages/Mindmap";
 
 const queryClient = new QueryClient();
 
@@ -41,9 +38,6 @@ const App = () => (
           <Route path="/matching/:id" element={<MatchingGame />} />
           <Route path="/learn/:id" element={<LearnMode />} />
           <Route path="/test/:id" element={<TestMode />} />
-          <Route path="/memory-tracking" element={<MemoryTracking />} />
-          <Route path="/study-heatmap" element={<StudyHeatmap />} />
-          <Route path="/mindmap/:id" element={<Mindmap />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

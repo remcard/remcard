@@ -113,24 +113,22 @@ const Study = () => {
   };
 
   const filterCards = () => {
-    const currentCard = displayedCards[currentIndex];
-    
-    if (starredOnly) {
-      const starred = flashcards.filter(c => c.is_starred);
-      setDisplayedCards(starred.length > 0 ? starred : flashcards);
-    } else {
-      setDisplayedCards(flashcards);
+    const prevCardId = displayedCards[currentIndex]?.id;
+
+    // Build the new displayed list based on filter
+    const starred = flashcards.filter((c) => c.is_starred);
+    const newDisplayed = starredOnly ? (starred.length > 0 ? starred : flashcards) : flashcards;
+
+    // Find previous card in new list (if it exists)
+    let nextIndex = 0;
+    if (prevCardId) {
+      const idxInNew = newDisplayed.findIndex((c) => c.id === prevCardId);
+      nextIndex = idxInNew !== -1 ? idxInNew : 0;
     }
-    
-    // Try to maintain current card position after filtering
-    if (currentCard) {
-      const newIndex = flashcards.findIndex(c => c.id === currentCard.id);
-      if (newIndex !== -1 && newIndex < flashcards.length) {
-        setCurrentIndex(newIndex);
-        return;
-      }
-    }
-    setCurrentIndex(0);
+
+    // Apply list and clamp index to range
+    setDisplayedCards(newDisplayed);
+    setCurrentIndex(Math.min(nextIndex, Math.max(newDisplayed.length - 1, 0)));
   };
 
   const handleShuffle = () => {

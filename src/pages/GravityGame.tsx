@@ -19,6 +19,7 @@ interface FallingWord {
   term: string;
   answer: string;
   y: number;
+  x: number;
   speed: number;
 }
 
@@ -34,6 +35,7 @@ const GravityGame = () => {
   const [isGameOver, setIsGameOver] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
+  const [showTerms, setShowTerms] = useState(true);
 
   useEffect(() => {
     fetchSetAndCards();
@@ -53,7 +55,6 @@ const GravityGame = () => {
         const reachedBottom = updated.filter((w) => w.y >= 80);
         if (reachedBottom.length > 0) {
           setHearts((h) => Math.max(0, h - reachedBottom.length));
-          toast.error(`Lost ${reachedBottom.length} heart${reachedBottom.length > 1 ? 's' : ''}!`);
         }
 
         return updated.filter((w) => w.y < 80);
@@ -71,9 +72,10 @@ const GravityGame = () => {
         const randomCard = flashcards[Math.floor(Math.random() * flashcards.length)];
         const newWord: FallingWord = {
           id: `${randomCard.id}-${Date.now()}`,
-          term: randomCard.term,
-          answer: randomCard.definition,
+          term: showTerms ? randomCard.term : randomCard.definition,
+          answer: showTerms ? randomCard.definition : randomCard.term,
           y: -10,
+          x: 10 + Math.random() * 80,
           speed: 0.5 + Math.random() * 0.5,
         };
         setFallingWords((prev) => [...prev, newWord]);
@@ -143,7 +145,8 @@ const GravityGame = () => {
     }
   };
 
-  const startGame = () => {
+  const startGame = (mode: boolean) => {
+    setShowTerms(mode);
     setGameStarted(true);
     setHearts(5);
     setScore(0);
@@ -152,7 +155,11 @@ const GravityGame = () => {
   };
 
   const restartGame = () => {
-    startGame();
+    setGameStarted(false);
+    setHearts(5);
+    setScore(0);
+    setIsGameOver(false);
+    setFallingWords([]);
   };
 
   if (isLoading) {
@@ -172,18 +179,28 @@ const GravityGame = () => {
             <h2 className="text-4xl font-bold">Gravity Game</h2>
             <p className="text-xl text-muted-foreground">{setTitle}</p>
             <div className="text-left space-y-2 bg-muted p-6 rounded-lg">
-              <h3 className="font-semibold text-lg">How to Play:</h3>
+            <h3 className="font-semibold text-lg">How to Play:</h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                 <li>Words fall from the top of the screen</li>
-                <li>Type the correct definition before they hit the bottom</li>
+                <li>Type the correct answer before they hit the bottom</li>
                 <li>You have 5 hearts - lose one for each word that falls</li>
                 <li>Score more points by answering quickly!</li>
               </ul>
             </div>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg text-center">Choose what falls:</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <Button onClick={() => startGame(true)} className="w-full" size="lg" variant="default">
+                  Terms Fall
+                  <p className="text-xs mt-1 opacity-80">(Type definitions)</p>
+                </Button>
+                <Button onClick={() => startGame(false)} className="w-full" size="lg" variant="secondary">
+                  Definitions Fall
+                  <p className="text-xs mt-1 opacity-80">(Type terms)</p>
+                </Button>
+              </div>
+            </div>
           </div>
-          <Button onClick={startGame} className="w-full" size="lg">
-            Start Game
-          </Button>
           <Button variant="outline" onClick={() => navigate("/")} className="w-full">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -245,9 +262,11 @@ const GravityGame = () => {
           {fallingWords.map((word) => (
             <div
               key={word.id}
-              className="absolute left-1/2 -translate-x-1/2 transition-all animate-fade-in"
+              className="absolute transition-all animate-fade-in"
               style={{
                 top: `${word.y}%`,
+                left: `${word.x}%`,
+                transform: 'translateX(-50%)',
               }}
             >
               <Card className="p-4 bg-gradient-primary text-white font-bold text-xl shadow-glow whitespace-nowrap">

@@ -101,9 +101,13 @@ const MatchingGame = () => {
   };
 
   const initializeGame = (cards: Flashcard[]) => {
+    // Select random 6-7 pairs
+    const numPairs = Math.min(cards.length, 6 + Math.floor(Math.random() * 2));
+    const shuffledCards = [...cards].sort(() => Math.random() - 0.5).slice(0, numPairs);
+    
     const gameCards: MatchCard[] = [];
     
-    cards.forEach(card => {
+    shuffledCards.forEach(card => {
       gameCards.push({
         id: `term-${card.id}`,
         text: card.term,

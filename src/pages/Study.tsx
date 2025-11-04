@@ -202,6 +202,13 @@ const Study = () => {
     }
   };
 
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+      setIsFlipped(false);
+    }
+  };
+
   const handleRestart = () => {
     setCurrentIndex(0);
     setIsFlipped(false);
@@ -363,11 +370,21 @@ const Study = () => {
             </Card>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-4">
+            <Button
+              onClick={handlePrevious}
+              size="lg"
+              variant="outline"
+              disabled={currentIndex === 0}
+              className="transition-all duration-200 hover:scale-105"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Previous
+            </Button>
             <Button
               onClick={handleNext}
               size="lg"
-              className="bg-gradient-primary hover:opacity-90 transition-opacity px-8"
+              className="bg-gradient-primary hover:opacity-90 transition-all duration-200 hover:scale-105 px-8"
             >
               {currentIndex < displayedCards.length - 1 ? (
                 <>

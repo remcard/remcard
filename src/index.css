@@ -330,4 +330,22 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Global hover animations */
+  button:not(:disabled) {
+    @apply transition-all duration-200;
+  }
+
+  button:not(:disabled):hover {
+    @apply scale-105;
+  }
+
+  /* Card hover effects */
+  [class*="Card"]:not(.no-hover) {
+    @apply transition-all duration-300;
+  }
+
+  [class*="Card"]:not(.no-hover):hover {
+    @apply shadow-lg scale-[1.02];
+  }
 }

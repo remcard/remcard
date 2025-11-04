@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Trash2, Edit, Play, Zap, FileText } from "lucide-react";
+import { BookOpen, Trash2, Edit, Play, Zap, FileText, Rocket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
@@ -101,15 +101,26 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
               </AlertDialogContent>
             </AlertDialog>
           </div>
-          <Button
-            onClick={() => navigate(`/test/${set.id}`)}
-            variant="outline"
-            disabled={cardCount === 0}
-            className="w-full"
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            Test
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => navigate(`/test/${set.id}`)}
+              variant="outline"
+              disabled={cardCount === 0}
+              className="flex-1"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Test
+            </Button>
+            <Button
+              onClick={() => navigate(`/gravity/${set.id}`)}
+              variant="outline"
+              disabled={cardCount === 0}
+              className="flex-1"
+            >
+              <Rocket className="w-4 h-4 mr-2" />
+              Gravity
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

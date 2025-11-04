@@ -46,6 +46,7 @@ const TestMode = () => {
   const [useAI, setUseAI] = useState(true);
   const [timeLimit, setTimeLimit] = useState(0);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(['multiple_choice', 'true_false', 'fill_blank']);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     fetchSetAndCards();
@@ -108,7 +109,10 @@ const TestMode = () => {
       return;
     }
 
-    const count = Math.min(questionCount, flashcards.length);
+    setIsGenerating(true);
+    toast.loading("Making test...", { id: "generating-test" });
+
+    const count = Math.min(questionCount, flashcards.length, 40);
     const selectedCards = flashcards.sort(() => Math.random() - 0.5).slice(0, count);
 
     if (useAI) {
@@ -123,10 +127,14 @@ const TestMode = () => {
           setQuestions(data.questions);
           setTestStarted(true);
           if (timeLimit > 0) setTimeRemaining(timeLimit * 60);
+          toast.dismiss("generating-test");
+          toast.success("Test ready!");
+          setIsGenerating(false);
           return;
         }
       } catch (error) {
         console.error('AI generation failed:', error);
+        toast.dismiss("generating-test");
         toast.error("AI generation failed, using manual questions");
       }
     }
@@ -171,6 +179,9 @@ const TestMode = () => {
     setQuestions(manualQuestions);
     setTestStarted(true);
     if (timeLimit > 0) setTimeRemaining(timeLimit * 60);
+    toast.dismiss("generating-test");
+    toast.success("Test ready!");
+    setIsGenerating(false);
   };
 
   const handleSubmit = () => {
@@ -251,14 +262,14 @@ const TestMode = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="count">Number of Questions (max {flashcards.length})</Label>
+              <Label htmlFor="count">Number of Questions (max {Math.min(flashcards.length, 40)})</Label>
               <Input
                 id="count"
                 type="number"
                 min="1"
-                max={flashcards.length}
+                max={Math.min(flashcards.length, 40)}
                 value={questionCount}
-                onChange={(e) => setQuestionCount(Math.min(Number(e.target.value), flashcards.length))}
+                onChange={(e) => setQuestionCount(Math.min(Number(e.target.value), flashcards.length, 40))}
               />
             </div>
 
@@ -286,8 +297,13 @@ const TestMode = () => {
             </div>
           </div>
 
-          <Button onClick={generateQuestions} className="w-full" size="lg">
-            Start Test
+          <Button 
+            onClick={generateQuestions} 
+            className="w-full" 
+            size="lg"
+            disabled={isGenerating}
+          >
+            {isGenerating ? "Generating..." : "Start Test"}
           </Button>
         </Card>
       </div>
@@ -415,8 +431,8 @@ const TestMode = () => {
           ) : (
             <div className="space-y-4">
               <RadioGroup value={userAnswer} onValueChange={setUserAnswer}>
-                {currentQuestion.options?.map((option, i) => (
-                  <div key={i} className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-accent/50 cursor-pointer">
+                {(currentQuestion.options || []).map((option, i) => (
+                  <div key={i} className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-accent/50 cursor-pointer transition-all duration-200 hover:scale-[1.02]">
                     <RadioGroupItem value={option} id={`option-${i}`} />
                     <Label htmlFor={`option-${i}`} className="flex-1 cursor-pointer">
                       {option}

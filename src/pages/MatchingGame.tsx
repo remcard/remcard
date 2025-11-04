@@ -237,19 +237,20 @@ const MatchingGame = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {matchCards.map((card) => (
                 <Card
                   key={card.id}
                   onClick={() => handleCardClick(card.id)}
                   className={cn(
-                    "p-4 cursor-pointer transition-all duration-200 hover:scale-105",
-                    card.isMatched && "opacity-50 cursor-not-allowed bg-success/20",
-                    selectedCards.includes(card.id) && "ring-2 ring-primary bg-primary/10",
-                    !card.isMatched && !selectedCards.includes(card.id) && "hover:shadow-lg"
+                    "p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:-translate-y-1 animate-fade-in",
+                    card.isMatched && "opacity-50 cursor-not-allowed bg-success/20 animate-scale-in",
+                    selectedCards.includes(card.id) && "ring-4 ring-primary bg-primary/10 scale-105 shadow-glow",
+                    !card.isMatched && !selectedCards.includes(card.id) && "hover:shadow-lg hover:shadow-primary/20"
                   )}
+                  style={{ animationDelay: `${matchCards.indexOf(card) * 30}ms` }}
                 >
                   <p className="text-sm text-center break-words">{card.text}</p>
                 </Card>
@@ -257,11 +258,11 @@ const MatchingGame = () => {
             </div>
 
             {isComplete && (
-              <Card className="mt-6 p-6 text-center bg-gradient-primary text-white">
-                <Trophy className="w-12 h-12 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Congratulations!</h2>
-                <p className="text-lg">You completed it in {formatTime(elapsedTime)}</p>
-                <Button onClick={restartGame} variant="secondary" className="mt-4">
+              <Card className="mt-6 p-8 text-center bg-gradient-primary text-white animate-scale-in shadow-glow">
+                <Trophy className="w-16 h-16 mx-auto mb-4 animate-bounce" />
+                <h2 className="text-3xl font-bold mb-2">Congratulations!</h2>
+                <p className="text-xl mb-4">You completed it in {formatTime(elapsedTime)}</p>
+                <Button onClick={restartGame} variant="secondary" className="mt-4 transition-all duration-200 hover:scale-105">
                   Play Again
                 </Button>
               </Card>

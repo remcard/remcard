@@ -31,14 +31,11 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
   const cardCount = set.flashcards[0]?.count || 0;
 
   return (
-    <Card className="group relative overflow-hidden hover:shadow-glow transition-all duration-300 hover:-translate-y-2 bg-gradient-card border-border/50 animate-fade-in">
-      <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-      <div className="absolute -inset-1 bg-gradient-primary opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300" />
-      
-      <CardHeader className="relative z-10">
+    <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-card border-border/50">
+      <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors duration-200">
+            <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
               {set.title}
             </CardTitle>
             <CardDescription className="mt-2 line-clamp-2">
@@ -47,9 +44,9 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="relative z-10">
+      <CardContent>
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <BookOpen className="w-4 h-4 group-hover:animate-bounce" />
+          <BookOpen className="w-4 h-4" />
           <span>{cardCount} {cardCount === 1 ? 'card' : 'cards'}</span>
         </div>
         
@@ -57,7 +54,7 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
           <div className="flex gap-2">
             <Button
               onClick={onStudy}
-              className="flex-1 bg-gradient-primary hover:opacity-90 transition-all duration-200 hover:shadow-glow"
+              className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
               disabled={cardCount === 0}
             >
               <Play className="w-4 h-4 mr-2" />
@@ -67,7 +64,7 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
               onClick={() => navigate(`/matching/${set.id}`)}
               variant="outline"
               disabled={cardCount === 0}
-              className="flex-1 hover:border-primary hover:text-primary transition-all duration-200"
+              className="flex-1"
             >
               <Zap className="w-4 h-4 mr-2" />
               Match
@@ -76,17 +73,16 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
               onClick={onEdit}
               variant="outline"
               size="icon"
-              className="hover:bg-primary hover:text-primary-foreground transition-all duration-200"
             >
               <Edit className="w-4 h-4" />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="icon" className="hover:bg-destructive hover:text-destructive-foreground transition-all duration-200">
+                <Button variant="outline" size="icon" className="hover:bg-destructive hover:text-destructive-foreground">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="bg-background/95 backdrop-blur-lg">
+              <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete this set?</AlertDialogTitle>
                   <AlertDialogDescription>
@@ -110,7 +106,7 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
               onClick={() => navigate(`/test/${set.id}`)}
               variant="outline"
               disabled={cardCount === 0}
-              className="flex-1 hover:border-primary hover:text-primary transition-all duration-200"
+              className="flex-1"
             >
               <FileText className="w-4 h-4 mr-2" />
               Test
@@ -119,7 +115,7 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
               onClick={() => navigate(`/gravity/${set.id}`)}
               variant="outline"
               disabled={cardCount === 0}
-              className="flex-1 hover:border-secondary hover:text-secondary transition-all duration-200"
+              className="flex-1"
             >
               <Rocket className="w-4 h-4 mr-2" />
               Gravity

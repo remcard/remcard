@@ -333,15 +333,11 @@ All colors MUST be HSL.
 
   /* Global hover animations */
   button:not(:disabled) {
-    @apply transition-all duration-200 relative;
+    @apply transition-all duration-200;
   }
 
   button:not(:disabled):hover {
     @apply scale-105;
-  }
-
-  button:not(:disabled):active {
-    @apply scale-95;
   }
 
   /* Card hover effects */
@@ -352,28 +348,4 @@ All colors MUST be HSL.
   [class*="Card"]:not(.no-hover):hover {
     @apply shadow-lg scale-[1.02];
   }
-}
-
-.drop-shadow-glow {
-  filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.5));
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
-  background-size: 1000px 100%;
-  animation: shimmer 3s infinite;
 }

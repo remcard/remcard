@@ -13,6 +13,7 @@ interface FlashcardSet {
   id: string;
   title: string;
   description: string | null;
+  is_public?: boolean;
   created_at: string;
   flashcards: { count: number }[];
 }
@@ -57,6 +58,7 @@ const Dashboard = () => {
           id,
           title,
           description,
+          is_public,
           created_at,
           flashcards(count)
         `)
@@ -75,6 +77,13 @@ const Dashboard = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
+      
+      // Reset theme to default
+      localStorage.setItem("theme", "normal");
+      const root = document.documentElement;
+      root.classList.remove("dark");
+      root.removeAttribute("data-theme");
+      
       navigate("/auth");
     } catch (error: any) {
       toast.error("Failed to sign out");

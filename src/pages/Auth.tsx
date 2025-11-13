@@ -57,6 +57,28 @@ const Auth = () => {
 
       if (error) throw error;
 
+      // Load user's theme
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("theme")
+          .eq("id", user.id)
+          .single();
+        
+        const theme = profile?.theme || "normal";
+        localStorage.setItem("theme", theme);
+        
+        const root = document.documentElement;
+        root.classList.remove("dark");
+        root.removeAttribute("data-theme");
+        if (theme === "midnight") {
+          root.classList.add("dark");
+        } else if (theme !== "normal") {
+          root.setAttribute("data-theme", theme);
+        }
+      }
+
       toast.success("Welcome back!");
       navigate("/");
     } catch (error: any) {

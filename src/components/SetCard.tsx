@@ -1,7 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Trash2, Edit, Play, Zap, Rocket } from "lucide-react";
+import { BookOpen, Trash2, Edit, Play, Zap, Rocket, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,12 +14,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SetCardProps {
   set: {
     id: string;
     title: string;
     description: string | null;
+    is_public?: boolean;
     flashcards: { count: number }[];
   };
   onDelete: (id: string) => void;
@@ -29,6 +32,25 @@ interface SetCardProps {
 const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
   const navigate = useNavigate();
   const cardCount = set.flashcards[0]?.count || 0;
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/study/${set.id}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      
+      // Make the set public if it isn't already
+      if (!set.is_public) {
+        await supabase
+          .from("flashcard_sets")
+          .update({ is_public: true })
+          .eq("id", set.id);
+      }
+      
+      toast.success("Link copied! Set is now public.");
+    } catch (error) {
+      toast.error("Failed to copy link");
+    }
+  };
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-gradient-card border-border/50">
@@ -78,17 +100,29 @@ const SetCard = ({ set, onDelete, onStudy, onEdit }: SetCardProps) => {
               <Rocket className="w-4 h-4 mr-2" />
               Gravity
             </Button>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleShare}
+              variant="outline"
+              className="flex-1"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share Link
+            </Button>
             <Button
               onClick={onEdit}
               variant="outline"
-              size="icon"
+              className="flex-1"
             >
-              <Edit className="w-4 h-4" />
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="icon" className="hover:bg-destructive hover:text-destructive-foreground">
-                  <Trash2 className="w-4 h-4" />
+                <Button variant="outline" className="flex-1 hover:bg-destructive hover:text-destructive-foreground">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>

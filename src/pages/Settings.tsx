@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const themes = [
   { id: "normal", name: "Normal", description: "White and light purple" },
@@ -20,11 +21,28 @@ const Settings = () => {
   const [currentTheme, setCurrentTheme] = useState("normal");
 
   useEffect(() => {
-    // Load saved theme
-    const savedTheme = localStorage.getItem("theme") || "normal";
-    setCurrentTheme(savedTheme);
-    applyTheme(savedTheme);
+    loadTheme();
   }, []);
+
+  const loadTheme = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("theme")
+          .eq("id", user.id)
+          .single();
+        
+        const theme = profile?.theme || "normal";
+        setCurrentTheme(theme);
+        applyTheme(theme);
+        localStorage.setItem("theme", theme);
+      }
+    } catch (error) {
+      console.error("Failed to load theme:", error);
+    }
+  };
 
   const applyTheme = (theme: string) => {
     const root = document.documentElement;
@@ -38,11 +56,23 @@ const Settings = () => {
     }
   };
 
-  const handleThemeChange = (theme: string) => {
+  const handleThemeChange = async (theme: string) => {
     setCurrentTheme(theme);
     localStorage.setItem("theme", theme);
     applyTheme(theme);
-    toast.success("Theme updated!");
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ theme })
+          .eq("id", user.id);
+      }
+      toast.success("Theme updated!");
+    } catch (error) {
+      toast.error("Failed to save theme");
+    }
   };
 
   return (
